@@ -146,6 +146,12 @@ select pid,waiting,now() - query_start as runtime,query from pg_stat_activity wh
 "
 
 echo
+echo === Running vacuum, analyze, and rebuild sessions 9.6+ ===
+psql $db ${HPPTOPTS} -c "
+select pid,wait_event, wait_event_type,now() - query_start as runtime,query from pg_stat_activity where query ilike 'autovacuum%' or query ilike 'VACUUM%' or query ilike 'ANALYZE%' or query ilike 'CREATE INDEX%' or query ilike 'CREATE UNIQUE INDEX%' order by query_start
+"
+
+echo
 echo === Major autovacuum settings ===
 psql $db ${HPPTOPTS} -c "
 SELECT name,setting,(setting = boot_val) AS default FROM pg_settings WHERE name ILIKE 'autovacuum%' OR name IN ('vacuum_cost_limit')
